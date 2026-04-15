@@ -22,9 +22,9 @@ const Hero = () => {
 
       <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
         {isAuthenticated ? (
-          <link to='/dashboard' className="bg-gradient-to-r from-blue-950 to-blue-900 text-white px-8 py-4 rounded-xl font-bold text-base sm:text-lg hover:bg-blue-900 trasnsition-all duration-200 hover:scale-105 hover:shadow-2xl transform">
+          <Link to='/dashboard' className="bg-gradient-to-r from-blue-950 to-blue-900 text-white px-8 py-4 rounded-xl font-bold text-base sm:text-lg hover:bg-blue-900 trasnsition-all duration-200 hover:scale-105 hover:shadow-2xl transform">
             Go to Dashboard
-          </link>
+          </Link>
         ): (
           <Link to='/signup' className="bg-gradient-to-r from-blue-950 to-blue-900 text-white px-8 py-4 rounded-xl font-bold text-base sm:text-lg hover:bg-gray-800 transition-all duration-200 hover:scale-105 hover:shadow-2xl transform">
           Get Started for Free 
