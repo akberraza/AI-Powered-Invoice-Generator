@@ -1,3 +1,4 @@
+console.log("DashboardLayout Rendered");
 import { useEffect, useState } from "react";
 import {
   Briefcase,
@@ -184,7 +185,6 @@ const DashboardLayout = ({ children, activeMenu }) => {
 
         {/* Main Content area */}
         <main className="flex-1 overflow-auto p-6">
-            <h1>TEST CONTENT</h1>
           <Outlet />
         </main> 
       </div>

@@ -10,24 +10,31 @@ import InvoiceDetails from './pages/Invoices/InvoiceDetails';
 import ProfilePage from './pages/Profile/ProfilePage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import DashboardLayout from './components/layout/DashboardLayout'; // ✅ add kiya
 
 const App = () => {
   return (
      <AuthProvider>
         <BrowserRouter>
             <Routes>
+
                 {/* Public Routes */}
                <Route path='/' element={<LandingPage />} />
                <Route path='/signup' element={<Signup />} />
                <Route path='/login' element={<Login />} />
 
-               {/* Protected Routes */}
-               <Route path='/' element={<ProtectedRoute />} />
-               <Route path='dashboard' element={<Dashboard />} />
-               <Route path='invoices' element={<AllInvoices />} />
-               <Route path='invoices/new' element={<CreateInvoice />} />
-               <Route path='invoices/:id' element={<InvoiceDetails />} />
-               <Route path='profile' element={<ProfilePage ></ProfilePage>} />
+               {/* Protected + Layout Routes */}
+               <Route element={<ProtectedRoute />}>
+                 <Route element={<DashboardLayout />}>
+
+                   <Route path='/dashboard' element={<Dashboard />} />
+                   <Route path='/invoices' element={<AllInvoices />} />
+                   <Route path='/invoices/new' element={<CreateInvoice />} />
+                   <Route path='/invoices/:id' element={<InvoiceDetails />} />
+                   <Route path='/profile' element={<ProfilePage />} />
+
+                 </Route>
+               </Route>
 
               {/* Catch all route */}
               <Route path='*' element={<Navigate to='/' replace />} />

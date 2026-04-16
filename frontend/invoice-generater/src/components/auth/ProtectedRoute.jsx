@@ -1,6 +1,5 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
-import DashboardLayout from '../layout/DashboardLayout';
 import { useAuth } from '../../context/AuthContext';
 
 const ProtectedRoute = ({children}) => {
@@ -17,11 +16,7 @@ const ProtectedRoute = ({children}) => {
   }
 
   
-    return (
-     <DashboardLayout>
-        {children ? children : <Outlet />}
-     </DashboardLayout>
-    )
+    return <Outlet />
 }
 
 export default ProtectedRoute
