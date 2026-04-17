@@ -37,7 +37,7 @@ const AIInsightsCard = () => {
                 <div className='h-4 bg-slate-200 rounded w-1/2'></div>
             </div>
         ): (
-            <ul className=''>
+            <ul className='space-y-3 list-disc list-inside text-slate-600 ml-3'>
                 {insights.map((insight, index) => (
                     <li key={index} className=''>{insight}</li>
                 ))}

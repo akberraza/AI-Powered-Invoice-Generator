@@ -87,7 +87,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-8 pb-96">
+    <div className="space-y-8">
 
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Dashboard</h2>
