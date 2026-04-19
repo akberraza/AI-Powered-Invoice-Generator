@@ -22,7 +22,7 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
     existingInvoice || {
       invoiceDate: new Date().toISOString().split('T')[0],
       dueDate: "",
-      billForm: {
+      billFrom: {
         businessName: user?.businessName || "",
         email: user?.email || "",
         address: user?.address || "",
@@ -31,7 +31,7 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
       billTo: { clientName: "", email: "", address: "", phone: "" },
       items: [{ name: "", quantity: 1, unitPrice: 0, taxPercent: 0 }],
       notes: "",
-      paymentTerm: 'Net 15',
+      paymentTerms: 'Net 15',
     }
   );
 
@@ -62,12 +62,12 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
       });
     } else {
       const generateNewInvoiceNumber = async () => {
-        isGeneratingNumber(true);
+        setIsGeneratingNumber(true);
         try {
 
           const response = await axiosInstance.get(API_PATHS.INVOICE.GET_ALL_INVOICES);
           const invoice = response.data;
-          const maxNum = 0;
+          let maxNum = 0;
           invoice.forEach((inv) => {
             const num = parseInt(inv.invoiceNumber.split("-")[1]);
             if (!isNaN(num) && num > maxNum) maxNum = num;
@@ -84,13 +84,27 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
     }
   }, [existingInvoice]);
 
-  const handleInputChange = (e, section, index) => { }
+  const handleInputChange = (e, section, index) => { 
+    const {name, value} = e.target;
+      if(section){
+        setformData((prev) => ({...prev, [section]: {...prev[section], [name]:value}}));
+      }else if(index !== undefined){
+        const newItems = [...formData.items];
+        newItems[index] = {...newItems[index], [name]: value};
+        setformData((prev) => ({...prev, items: newItems}));
+      }else{
+        setformData((prev) => ({...prev, [name]: value}))
+      }
+  }
 
   const handleAddItem = () => {
     setformData({ ...formData, items: [...formData.items, { name: "", quantity: 1, unitPrice: 0, taxPercent: 0 }] });
   }
 
-  const handleRemoveItem = (index) => { }
+  const handleRemoveItem = (index) => { 
+    const newItems = formData.items.filter((_, i) => i !== index);
+    setformData({...formData, items: newItems})
+  }
 
   const { subTotal, taxTotal, total } = (() => {
     let subTotal = 0, taxTotal = 0;
@@ -102,9 +116,31 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
     return { subTotal, taxTotal, total: subTotal + taxTotal }
   })();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+    
+  const itemsWithTotal = formData.items.map((item) => ({
+    ...item,
+    total: (item.quantity || 0) * (item.unitPrice || 0) * (1 + (item.taxPercent || 0) / 100)
+  }))
+
+  const finalFormData = {...formData, items: itemsWithTotal, subTotal, taxTotal, total}
+
+  if(onSave) {
+    await onSave(finalFormData);
+  }else{
+    try {
+      await axiosInstance.post(API_PATHS.INVOICE.CREATE, finalFormData);
+      toast.success("Invoice created Successfully!");
+      navigate('/invoices');
+    } catch (err) {
+      toast.error("Failed to create invoice");
+      console.log(err);
+      
+    }
+  }
+  setLoading(false);
   }
 
   return (
@@ -135,16 +171,16 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
         <div className='bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 spacec-y-4  '>
           <h3 className='text-lg font-semibold text-slate-900 mb-2'>Bill From</h3>
-          <InputField label='Business Name' name='businessName' value={formData.billForm.businessName} onChange={(e) => handleInputChange(e, 'billFrom')} />
-          <InputField label='Email' type='email' name='email' value={formData.billForm.email} onChange={(e) => handleInputChange(e, 'billFrom')} />
-          <TextareaField label='Address' name='address' value={formData.billForm.address} onChange={(e) => handleInputChange(e, 'billFrom')} />
-          <InputField label='Phone' name='phone' value={formData.billForm.phone} onChange={(e) => handleInputChange(e, 'billFrom')} />
+          <InputField label='Business Name' name='businessName' value={formData.billFrom.businessName} onChange={(e) => handleInputChange(e, 'billFrom')} />
+          <InputField label='Email' type='email' name='email' value={formData.billFrom.email} onChange={(e) => handleInputChange(e, 'billFrom')} />
+          <TextareaField label='Address' name='address' value={formData.billFrom.address} onChange={(e) => handleInputChange(e, 'billFrom')} />
+          <InputField label='Phone' name='phone' value={formData.billFrom.phone} onChange={(e) => handleInputChange(e, 'billFrom')} />
         </div>
         <div className='bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 space-y-4'>
           <h3 className='text-lg font-semibold text-slate-900 mb-2'>Bill To</h3>
           <InputField label='Client Name' name='clientName' value={formData.billTo.clientName} onChange={(e) => handleInputChange(e, 'billTo')} />
-          <InputField label='Client Email' name='clientEmail' value={formData.billTo.email} onChange={(e) => handleInputChange(e, 'billTo')} />
-          <TextareaField label='Client Address' name='Address' value={formData.billTo.address} onChange={(e) => handleInputChange(e, 'billTo')} />
+          <InputField label='Client Email' name='email' value={formData.billTo.email} onChange={(e) => handleInputChange(e, 'billTo')} />
+          <TextareaField label='Client Address' name='address' value={formData.billTo.address} onChange={(e) => handleInputChange(e, 'billTo')} />
           <InputField label='Client Phone' name='phone' value={formData.billTo.phone} onChange={(e) => handleInputChange(e, 'billTo')} />
         </div>
       </div>
@@ -201,7 +237,7 @@ const CreateInvoice = ({ existingInvoice, onSave }) => {
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
         <div className='bg-white p-6 rounded-lg shadow-sm shadow-gray-100 border border-slate-200 space-y-4'>
           <h3 className='text-lg font-semibold text-slate-900 mb-2'>Notes & Terms</h3>
-          <TextareaField label='Notes' name='notes' value={formData.notes} onChange={handleInputChange} />
+          <TextareaField label='Notes' name='notes'  value={formData.notes} onChange={handleInputChange} />
           <SelectField
              label='Payment Terms'
              name='paymentTerms'
