@@ -41,6 +41,8 @@ const ReminderModal = ({isOpen, onClose, invoiceId }) => {
     setTimeout(() => setHasCopied(false), 2000);
   }
 
+  if(!isOpen) return null 
+
   return (
       <div className="fixed inset-0 z-50 overflow-y-auto">
         <div className="flex items-center justify-center min-h-screen px-4 text-center">

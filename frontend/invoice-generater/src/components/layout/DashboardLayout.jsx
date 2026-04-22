@@ -1,4 +1,3 @@
-console.log("DashboardLayout Rendered");
 import { useEffect, useState } from "react";
 import {
   Briefcase,
