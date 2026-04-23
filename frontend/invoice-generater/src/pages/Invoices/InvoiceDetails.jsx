@@ -98,7 +98,7 @@ const InvoiceDetails = () => {
         <div
           ref={invoiceRef}
           id='invoice-preview'
-          className='bg-white p-6 sm:p-8 md:p-12 rounded-lg shadow-md border border-slate-200 pb-[100vh]'
+          className='bg-white p-6 sm:p-8 md:p-12 rounded-lg shadow-md border border-slate-200'
         >
           <div className='flex flex-col sm:flex-row justify-between items-start pb-8 border-b border-slate-200'>
             <div>
@@ -184,14 +184,48 @@ const InvoiceDetails = () => {
               </div>
               <div className='flex justify-between font-semibold text-lg text-slate-900 border-t border-slate-200 pt-3 mt-3'>
                 <span>Total</span>
-                <span>${Number(invoice?.total || 0).toFixed(2)}</span>             
+                <span>${Number(invoice?.total || 0).toFixed(2)}</span>
               </div>
             </div>
           </div>
 
+          {invoice.notes && (
+            <div className='mt-8 pt-8 border-t border-slate-200'>
+              <h3 className='text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3'>Notes</h3>
+              <p className='text-sm text-slate-600 '>{invoice.notes}</p>
+            </div>
+          )}
 
         </div>
       </div>
+
+      <style>
+        {`
+        @page {
+          padding: 10px;
+        }
+        @media print {
+         body * {
+           visibility: hidden;
+         }
+          #invoice-content-wrapper, #invoice-content-wrapper * {
+           visibility: visible;
+          }
+          #invoice-content-wrapper{
+            position: absolute;
+            left: 0;
+            right: 0;
+            width: 100%
+          }
+          #invoice-preview{
+            box-shadow: none;
+            border: none;
+            border-radius: 0;
+            padding: 0
+          }         
+        }
+      `}
+      </style>
 
     </>
   )
