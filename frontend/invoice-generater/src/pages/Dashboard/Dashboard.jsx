@@ -26,16 +26,21 @@ const Dashboard = () => {
         const response = await axiosInstance.get(
           API_PATHS.INVOICE.GET_ALL_INVOICES
         );
-        const invoice = response.data;
+
+        const invoice = response.data || [];
+
         const totalInvoices = invoice.length;
+
         const totalPaid = invoice
-          .filter((inv) => inv.stats === "Paid")
-          .reduce((acc, inv) => acc + inv.total, 0);
+          .filter((inv) => inv.status === "Paid")
+          .reduce((acc, inv) => acc + Number(inv.total || 0), 0);
+
         const totalUnpaid = invoice
-          .filter((inv) => inv.stats !== 'Unpaid')
-          .reduce((acc, inv) => acc + inv.total, 0);
+          .filter((inv) => inv.status !== "Paid")
+          .reduce((acc, inv) => acc + Number(inv.total || 0), 0);
 
         setStats({ totalInvoices, totalPaid, totalUnpaid });
+
         setrecentInvoices(
           invoice
             .sort((a, b) => new Date(b.invoiceDate) - new Date(a.invoiceDate))
@@ -48,6 +53,7 @@ const Dashboard = () => {
         setLoading(false);
       }
     }
+
     fetchDashboardData();
   }, []);
 
@@ -61,13 +67,13 @@ const Dashboard = () => {
     {
       icon: DollarSign,
       label: "Total Paid",
-      value: `${stats.totalPaid.toFixed(2)}`,
+      value: `${(stats.totalPaid || 0).toFixed(2)}`,
       color: "emerald"
     },
     {
       icon: DollarSign,
       label: "Total Unpaid",
-      value: `${stats.totalUnpaid.toFixed(2)}`,
+      value: `${(stats.totalUnpaid || 0).toFixed(2)}`,
       color: "red"
     }
   ];
@@ -96,32 +102,33 @@ const Dashboard = () => {
 
       {/* Stats Card */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {statsData.map((stat, index) => (
-          <div key={index}
-            className="bg-white p-4 rounded-xl border border-slate-200 shadow-lg shadow-gray-100"
-          >
-            <div className="flex items-center">
-              <div
-                className={`flex-shrink-0 w-12 h-12 ${colorClassess[stat.color].bg
-                  } rounded-lg flex items-center justify-center`}
-              >
-                <stat
-                  className={`w-6 h-6 ${colorClassess[stat.color].text}`}
-                />
-              </div>
+        {statsData.map((stat, index) => {
+          const Icon = stat.icon;
 
-              <div className="ml-4 min-w-0">
-                <div className="text-sm font-medium text-slate-500 truncate">
-                  {stat.label}
+          return (
+            <div key={index}
+              className="bg-white p-4 rounded-xl border border-slate-200 shadow-lg shadow-gray-100"
+            >
+              <div className="flex items-center">
+                <div
+                  className={`flex-shrink-0 w-12 h-12 ${colorClassess[stat.color].bg} rounded-lg flex items-center justify-center`}
+                >
+                  <Icon className={`w-6 h-6 ${colorClassess[stat.color].text}`} />
                 </div>
 
-                <div className="text-2xl font-bold text-slata-900 break-words">
-                  {stat.value}
+                <div className="ml-4 min-w-0">
+                  <div className="text-sm font-medium text-slate-500 truncate">
+                    {stat.label}
+                  </div>
+
+                  <div className="text-2xl font-bold text-slata-900 break-words">
+                    {stat.value}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* AI Insight Card */}
@@ -149,36 +156,38 @@ const Dashboard = () => {
               <tbody className="bg-white divide-y divide-slate-200">
                 {recentInvoices.map((invoice) => (
                   <tr
-                     key={invoice._id}
-                     className="hover:bg-slate-50 cursor-pointer"
-                     onClick={() => navigate(`/invoices/${invoice._id}`)}
+                    key={invoice._id}
+                    className="hover:bg-slate-50 cursor-pointer"
+                    onClick={() => navigate(`/invoices/${invoice._id}`)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-slate-900">
-                        {invoice.billTo.clientName}
+                        {invoice.billTo?.clientName}
                       </div>
 
-                     <div className="text-sm text-slate-900">
-                      #{invoice.invoiceNumber}
-                     </div>
+                      <div className="text-sm text-slate-900">
+                        #{invoice.invoiceNumber}
+                      </div>
+                    </td>
 
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-800">
-                      ${invoice.total.toFixed(2)}
+                      ${(Number(invoice.total || 0)).toFixed(2)}
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           invoice.status === 'Paid'
-                             ? "bg-emerald-100 text-emerald-800"
-                             : invoice.status === 'Pending'
-                             ? "bg-amber-100 text-amber-800"
-                             : "bg-red-100 text-red-800"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : invoice.status === 'Pending'
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-red-100 text-red-800"
                         }`}
                       >
                         {invoice.status}
                       </span>
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                       {moment(invoice.dueDate).format('MMM D, YYYY')}
                     </td>
@@ -188,7 +197,7 @@ const Dashboard = () => {
 
             </table>
           </div>
-        ): (
+        ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
               <FileText className="w-8 h-8 text-slate-400" />
@@ -207,4 +216,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default Dashboard;
